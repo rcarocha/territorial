@@ -1,0 +1,108 @@
+%h1 Eleitor
+
+%p Análises eleitorais orientadas a eleitores.
+
+/ %h3 Sequência de ações
+/
+/ %ol
+/   %li Qual é a localização OU estado da federação (aparece marcado)
+/   %li Zoom, aparecem mais lugares (detalhamento): e se aparecer município?
+/   %li interface de pesquisa por município
+/   %li Selecionar: tipo de eleição, ano (última) (botões)
+/   %li Resultado da eleição: lista dos candidatos
+
+%h2=@hierarquia_lugares
+
+%h3=@subnivel_titulo
+
+- if @subnivel_loc != nil then
+   - @subnivel_loc.each do |subloc|
+
+      %a{:href => "?#{subloc.to_sym}=#{subloc.id}"}
+         %button.btn.btn-outline-primary{:type => "button"}="#{subloc.nome}"
+
+- if @eleicao then
+
+   %h2 Votos em Partidos
+   %ul
+      - if @eleicao.votos_legenda(@ano) == nil then
+         %div.alert.alert-dismissible.alert-danger
+            %button.close{ :type => "button",  :data-dismiss => "alert"}
+            %strong Não há votos de legenda computados no CEPESP.io!
+
+
+      - else
+         - @eleicao.votos_legenda(@ano).each do |legenda |
+            %li="#{legenda.sigla_partido}: #{legenda.qtde_votos} votos"
+
+   %h5 Comparecimento da eleição: #{@eleicao.resultado(@ano).qtd_comparecimento}
+   %h5 Abstenções: #{@eleicao.resultado(@ano).qtd_abstencoes}
+   .progress
+      .progress-bar.progress-bar-striped.bg-success{:role => "progressbar", :style => "width: " + (100*(@eleicao.resultado(@ano).qtd_abstencoes).to_i.to_f/(@eleicao.resultado(@ano).qtd_comparecimento).to_i).round(1).to_s + "%", "aria-valuenow".to_sym => "30", "aria-valuemin".to_sym =>"0", "aria-valuemax".to_sym => "100"}
+   %h5 Brancos:  #{@eleicao.resultado(@ano).qt_votos_brancos}
+   .progress
+      .progress-bar.progress-bar-striped.bg-warning{:role => "progressbar", :style => "width: " + (100*(@eleicao.resultado(@ano).qt_votos_brancos).to_i.to_f/(@eleicao.resultado(@ano).qtd_comparecimento).to_i).round(1).to_s + "%", "aria-valuenow".to_sym => "30", "aria-valuemin".to_sym =>"0", "aria-valuemax".to_sym => "100"}
+   %h5 Nulos: #{@eleicao.resultado(@ano).qt_votos_nulos}
+   .progress
+      .progress-bar.progress-bar-striped.bg-danger{:role => "progressbar", :style => "width: " + (100*(@eleicao.resultado(@ano).qt_votos_nulos).to_i.to_f/(@eleicao.resultado(@ano).qtd_comparecimento).to_i).round(1).to_s + "%", "aria-valuenow".to_sym => "30", "aria-valuemin".to_sym =>"0", "aria-valuemax".to_sym => "100"}
+
+   %p
+
+   %h2 Resultados por Candidato
+
+   %table.table.table-striped.table-hover.table-bordered
+      %thead.thead-dark
+         %tr
+            %th Título
+            %th Candidato
+            %th Partido
+            %th Número
+            %th Coligação
+            %th Domicílio
+            %th Votação (%Válidos/%Local/%Geral)
+            %th Status
+            %th Resultado
+
+      %tbody
+         - @eleicao.candidatos(@ano).each do |chave, dados|
+            %tr
+               %td=chave
+               %td
+                  %a{:href => "/charts/#{dados[0].numero_candidato}?data=#{dados[0].to_json}", :target => "_blank"}
+                     #{dados[0].nome_urna_candidato.titleize}
+               %td=dados[0].sigla_partido
+               %td
+                  %a{:href => "/charts/#{dados[0].numero_candidato}", :target => "_blank"}
+                     #{dados[0].numero_candidato}
+               %td="#{@eleicao.legendas(@ano)[dados[0].numero_partido].numero_partidos} partidos"
+               %td=dados[0].uf
+               %td="#{dados[0].qtde_votos} votos (#{dados[0].percentual_votos_validos}/#{dados[0].percentual_votos_localizacao}/#{dados[0].percentual_votos_gerais})"
+               %td=dados[0].des_situacao_candidatura.titleize
+               %td=dados[0].resultado_eleicao.to_s.gsub("_"," ").titleize
+
+/   %h2 detalhamento
+/
+/   .btn-group{:data-toggle => "buttons"}
+/      %label.btn.btn-primary.active
+/         %input{:name => "options", :id => "option1", :checked => "", :type => "radio"}
+/            Radio 1
+/      %label.btn.btn-primary
+/         %input{:name => "options", :id => "option2", :type => "radio"}
+/            Radio 2
+/      %label.btn.btn-primary
+/         %input{:name => "options", :id => "option3", :type => "radio"}
+/            Radio 3
+/
+/   %button.btn.btn-secondary{:type => "button", :data-toggle => "tooltip", :data-placement => "top", :title => "", :data-original-title => "Tooltip on top"} Dica
+/
+/
+/   %ol
+/      %li em quem você votou? (candidato, pessoa, legenda)
+/      %li Detalhamento por municipio do eleitor (mesma tabela com resultados relativos)
+/      %li raio x do seu voto (detalhamento abre aba abaixo). impacto na eleição: quem ajudou a eleger?
+/
+   %div{:id =>"piechart_3d", :style =>"width: 900px; height: 500px;"}
+
+
+   %script{:src  => "https://www.gstatic.com/charts/loader.js",
+           :type => "text/javascript"}

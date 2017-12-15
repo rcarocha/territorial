@@ -1,0 +1,21 @@
+<h1>execucao do teste controller</h1>
+
+
+<b>Users</b>
+
+<ol id="teste">
+ <li>parte inicial</li>
+ <li>parte inicial</li>
+ <li>parte inicial</li>
+ <li>parte inicial</li>
+ <li>parte inicial</li>
+ <li>parte inicial</li>
+</ol>
+
+<br>
+
+<%= form_with(model: @teste) do |f| %>
+  <%= f.label :id %><br>
+  <%= f.text_field :nome %>
+  <%= f.submit %>
+<% end %>

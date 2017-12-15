@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Territoral</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="http://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<script src="http://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+</head>
+	<body onload="carregarItens()">
+		<h1>Territorial</h1>
+		<h2></h2>
+		<table id="table_id" class="table table-borded table-hover">
+		    <thead>
+		        <tr>
+		            <th>Nome</th>
+		            <th>Partido</th>
+		            <th>Número</th>
+		            <th>Votos</th>
+		            <th>Votos Percentuais</th>
+		            <th>Localização</th>
+		        </tr>
+		    </thead>
+		    <tbody>
+		    </tbody>
+		</table>
+	</body>
+</html>
+
+<script type="text/javascript">
+
+function carregarItens(){
+
+	var itens, url = "example.php";
+	var tabela = $('#table_id').DataTable({
+
+        "language": {
+            "lengthMenu": "Mostrando _MENU_ registros por pagina",
+            "zeroRecords": "Nenhum resultado encontrado",
+            "info": "Mostrando página _PAGE_ de _PAGES_",
+            "infoEmpty": "Nenhum Registro disponível",
+            "infoFiltered": "(Filtrado de _MAX_ total registros)"
+        }
+    } );
+
+	$.ajax({
+		url: url,
+		cache: false,
+		dataType: "json",
+		beforeSend: function(){
+			$("h2").html("Carregando...");
+		},
+		error: function(){
+			$("h2").html("Houve algum erro");
+		},
+		success: function(retorno){
+			
+			for (var i = 0;  i<retorno.length; i++){
+					tabela.row.add( [
+		            	retorno[i].nome,
+			            retorno[i].partido,
+			            retorno[i].numero,
+			            retorno[i].votos,
+			            retorno[i].votos_percentuais,
+			            retorno[i].localização,
+		        ] ).draw( false );
+		    }
+			$("h2").html("Carregado");
+		
+		}
+	});
+
+
+}
+
+</script>

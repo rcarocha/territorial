@@ -1,0 +1,4 @@
+*~
+code/log/development.log
+rails/log/development.log
+rails/tmp/*
