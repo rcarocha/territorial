@@ -8,10 +8,16 @@
 </head>
 <body>
 	<h1></h1>
+	<h2 id="estado"></h2>
+	<h2 id="partido"></h2>
+	<h2 id="titulo"></h2>
+	<h2 id="cargo"></h2>
+	<canvas id="myChart" width="600" height="400"></canvas>
+  	<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+
 </body>
 </html>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
 <script type="text/javascript">
 	var url = 'http://localhost:3000/stat/<%= @id_stat %>';
 	var label = "";
@@ -20,36 +26,55 @@
 	var percentual_locate = dados['table']['percentual_votos_localizacao'];
 	var percentaual_votesValidate = dados['table']['percentual_votos_validos'];
 	var percentaual_votesGeneral = dados['table']['percentual_votos_gerais'];
+
 	var estado = dados['table']['nome_uf'];
+	var partido = dados['table']['sigla_partido'];
+	var titulo = dados['table']['num_titulo_eleitoral_candidato'];
+	var cargo = dados['table']['descricao_cargo'];
+
 	var mesoRegiao =  dados['table']['nome_meso'];
 	var nameCandidate =  dados['table']['nome_urna_candidato'];
-    
-    var messo = <%= @messoregioes.to_s.html_safe %>;
-	var canvas = $("<canvas />",{
-			  id: 'myChart',
-			  title: 'Candidato: '+nameCandidate,
-			});
- 	var h2 =  $("<h2 />",{
+   	
+   	var messo = <%= @messoregioes.to_s.html_safe %>;
+ 	
+ 	if (mesoRegiao){
+ 		var h2 =  $("<h2 />",{
 		  id: 'mesoRegiao',
 			  title: 'Candidato: '+nameCandidate,
 			  html: "Mesoregião: "+mesoRegiao
 		});
+		$("body").append(h2);
+ 	}
+ 	
+ 	$("h1").html("Nome: "+nameCandidate);
+ 	$("#estado").html("Estado: "+estado);
+ 	$("#partido").html("Partido: "+partido);
+ 	$("#titulo").html("Titulo: "+titulo);
+ 	$("#cargo").html("Cargo: "+cargo);
 
- 	$("body").append(h2);
- 	$("body").append(canvas);
- 	$("h1").html("Estado: "+estado);
+
  	var ctx = document.getElementById('myChart').getContext('2d');
-	var chart = new Chart(ctx,
-	{
-		 // The type of chart we want to create
-		type: 'pie',
-	// The data for our dataset
-		data: {
-	        datasets: [{
-	            data: [percentual_locate, percentaual_votesValidate, percentaual_votesGeneral],
-        	}],
-	        labels: [ 'Percentual Votos/Localizacao', 'Percentual Votos Validos', 'Percentual Votos Geral']
-    	},
-	});		
-	
+    var dados = [
+	   {
+	        value: percentual_locate,
+	        color:"#F7464A",
+	        highlight: "#FF5A5E",
+	        label: "Votos Locais"
+	    },
+	    {
+	        value: percentaual_votesValidate,
+	        color: "#46BFBD",
+	        highlight: "#5AD3D1",
+	        label: "Votos Válidos"
+	    },
+	    {
+	        value: percentaual_votesGeneral,
+	        color: "#FDB45C",
+	        highlight: "#FFC870",
+	        label: "Votos Geral"
+	    }
+	   ];
+	var ctx = document.getElementById("myChart").getContext("2d");
+	new Chart(ctx).Pie(dados);
+	//new Chart(ctx).Doughnut(dados);
 </script>

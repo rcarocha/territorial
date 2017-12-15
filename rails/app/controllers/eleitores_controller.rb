@@ -14,7 +14,6 @@ class EleitoresController < ApplicationController
       municipio = request["municipio"]
       estado = request["estado"]
 
-
       @subnivel_loc = nil
       @hierarquia_lugares = "Brasil"
       @subnivel_titulo = nil
