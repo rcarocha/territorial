@@ -52,9 +52,12 @@ TABELA_RESOLUCAO = {
       :estado => 2,
       :mesorregiao => 3,
       :microrregiao => 4,
-      :municipio => 5
+      :municipio => 5,
+		:macro => 1,
+		:meso => 3,
+		:micro => 4,
    }
-QUALIDADE = "&qualidade=2" # qualidade da resolucao das imagens geojson
+QUALIDADE = "&qualidade=3" # qualidade da resolucao das imagens geojson
 
 # Constroi os parametros de requisicao para recuperar geojson de localizacoes.
 # Exemplo:

@@ -2,33 +2,57 @@
 
 ## Desafio
 
- Detalhes do desafio estão mantidos em: [desafio de implementação](http://www.inf.ufg.br/~ricardo/esaas/desafio/desafio-implementacao.html). 
+Detalhes do desafio estï¿½o mantidos em: [desafio de implementaï¿½ï¿½o](http://www.inf.ufg.br/~ricardo/esaas/desafio/desafio-implementacao.html).
 
 + Nome da Equipe: ufcat
-+ Participantes: Ricardo (líder), Gabriel, Luis, Marco Túlio (graduado), Dimas
-+ Perfil da Equipe: professor e alunos de disciplina de graduação em Ciência da Computação, complementado com um graduado.
-+ Descrição do projeto a desenvolver
++ Participantes: Ricardo (lï¿½der), Gabriel, Luis, Marco Tï¿½lio (graduado), Dimas
++ Perfil da Equipe: professor e alunos de disciplina de graduaï¿½ï¿½o em Ciï¿½ncia da Computaï¿½ï¿½o, complementado com um graduado.
++ Descriï¿½ï¿½o do projeto a desenvolver
 
-   * A aplicação proverá pesquisas em resultados eleitorais baseadas em localização semântica estática (divisões administrativas) e dinâmica (territórios baseados em critérios sociais de acordo com o IBGE), e oferecerá um frontend composto de uma aplicação baseada em mapas que permitirá simulações e um backend que oferecerá as pesquisas utilizando uma API RESTful. Aplicação frontend ofererá ainda interface específica para eleitores, ajudando na avaliação do efeito do voto na eleição de fato e promovendo simulações. A solução integrará dados do IBGE, TSE (não incluídos no CEPESPData), bases de mapas abertas, além do próprio CEPESPData.
+   * A aplicaï¿½ï¿½o proverï¿½ pesquisas em resultados eleitorais baseadas em localizaï¿½ï¿½o semï¿½ntica estï¿½tica (divisï¿½es administrativas) e dinï¿½mica (territï¿½rios baseados em critï¿½rios sociais de acordo com o IBGE), e oferecerï¿½ um frontend composto de uma aplicaï¿½ï¿½o baseada em mapas que permitirï¿½ simulaï¿½ï¿½es e um backend que oferecerï¿½ as pesquisas utilizando uma API RESTful. Aplicaï¿½ï¿½o frontend ofererï¿½ ainda interface especï¿½fica para eleitores, ajudando na avaliaï¿½ï¿½o do efeito do voto na eleiï¿½ï¿½o de fato e promovendo simulaï¿½ï¿½es. A soluï¿½ï¿½o integrarï¿½ dados do IBGE, TSE (nï¿½o incluï¿½dos no CEPESPData), bases de mapas abertas, alï¿½m do prï¿½prio CEPESPData.
 
-## Implementação proposta
+## ExecuÃ§Ã£o da AplicaÃ§Ã£o
 
-* Ver documentação das [interfaces da aplicação](INTERFACES.md), que indica tanto aspectos da interface gráfica como dos componentes internos.
-* ver [documentação projeto implementação](docs/implementacao.md)
+### Requisitos
+
++ Ruby (acima de 2.2)
++ Rails (versÃ£o 5)
++ Executar o `bundle install` para instalar eventuais dependÃªncias.
+
+### Cache de dados
+
+A aplicaÃ§Ã£o utiliza cache dinÃ¢mico em dois nÃ­veis. Para que nÃ£o haja muitos problemas para testar a aplicaÃ§Ã£o, sugere-se que se baixe um cache utilizado nos testes de desenvolvimento e disponÃ­vel no arquivo <goo.gl/ME8b5E> (50Mb). O arquivo deve ser descompactado no diretÃ³rio `rails/tmp` (Ã© um arquivo tgz - TAR com GZIP).
+
+A aplicaÃ§Ã£o funciona mesmo sem esse cache.
+
+### ExecuÃ§Ã£o
+
+A aplicaÃ§Ã£o encontra-se em modo de desenvolvimento. Para executÃ¡-la, deve-se digitar de dentro do diretÃ³rio `rails`:
+
+```
+rails server
+```
+
+A aplicaÃ§Ã£o ficarÃ¡ disponÃ­vel em <http://localhost:3000/>, considerando que o acesso serÃ¡ feito na mesma mÃ¡quina de execuÃ§Ã£o da aplicaÃ§Ã£o.
+
+## Implementaï¿½ï¿½o proposta
+
+* Ver documentaï¿½ï¿½o das [interfaces da aplicaï¿½ï¿½o](INTERFACES.md), que indica tanto aspectos da interface grï¿½fica como dos componentes internos.
+* ver [documentaï¿½ï¿½o projeto implementaï¿½ï¿½o](docs/implementacao.md)
 
 ## Ferramentas
 
-+ Ruby: utilizar versão **acima da versão 2.3**, preferencialmente. **Não** utilizar Ruby em versões menores que 2.0.
++ Ruby: utilizar versï¿½o **acima da versï¿½o 2.3**, preferencialmente. **Nï¿½o** utilizar Ruby em versï¿½es menores que 2.0.
 
-+ Slack: comunicação entre os participantes
-+ Issue tracker: registro de problemas no próprio gitlab, ao menos por enquanto
-+ Controle de versão: no gitlab (**não compartilhar em outro local**!)
++ Slack: comunicaï¿½ï¿½o entre os participantes
++ Issue tracker: registro de problemas no prï¿½prio gitlab, ao menos por enquanto
++ Controle de versï¿½o: no gitlab (**nï¿½o compartilhar em outro local**!)
 
 ## Tarefas
 
 + **Gabriel**: interface com a API IBGE em <https://servicodados.ibge.gov.br/api/docs>
 + **Luis**: interface com a API REST do CEPESP.io em <https://github.com/Cepesp-Fgv/cepesp-rest>
-+ **Ricardo**: projeto da solução e a API de consultas.
++ **Ricardo**: projeto da soluï¿½ï¿½o e a API de consultas.
 + **Marco**: a definir
 + **Dimas**: a definir
 

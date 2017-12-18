@@ -259,11 +259,15 @@ class DadosCepesp
 
 	def self.pesquisa_eleicao_votos_regiao(ano, cargo, tipo_regiao, regiao_id=nil)
 		Rails.logger.debug("[pesquisa_eleicao_votos_regiao(4p)]: " + ano.to_s + " - " + cargo.to_s + " - " + tipo_regiao.to_s + " - " + regiao_id.to_s + "\n")
+		if !(tipo_regiao.is_a? Symbol) then
+			tipo_regiao = tipo_regiao.to_sym
+		end
+
 		s = "&agregacao_politica="+ $AGREGACAO_POLITICA[:candidato].to_s +
 		(tipo_regiao==nil ? "" : "&agregacao_regional="+ $AGREGACAO[tipo_regiao].to_s) +
 		(ano==nil ? "" : "&anos="+ano.to_s)+
 		(cargo==nil ? "" : "&cargo="+cargo.to_s)+
-		adicionar_coluna(["CODIGO_CARGO","NUM_TURNO", "SIGLA_PARTIDO", "DESCRICAO_CARGO", "ANO_ELEICAO", "NUMERO_PARTIDO", "UF", "NUMERO_CANDIDATO", "QTDE_VOTOS", "NUM_TITULO_ELEITORAL_CANDIDATO"])
+		adicionar_coluna(["CODIGO_CARGO","NUM_TURNO", "SIGLA_PARTIDO", "DESCRICAO_CARGO", "ANO_ELEICAO", "NUMERO_PARTIDO", "UF","NOME_UF","NUMERO_CANDIDATO", "QTDE_VOTOS", "NUM_TITULO_ELEITORAL_CANDIDATO"])
 
 	    coluna_regiao_id = nil
 

@@ -2,7 +2,6 @@
 	// Hover do mouse
 	function highlightFeature(e) {
 	    var layer = e.target;
-
 	    layer.setStyle({
 	        weight: 5,
 	        color: '#666',
@@ -14,6 +13,7 @@
 	        layer.bringToFront();
 	    }
 	    info.update(layer.feature.properties);
+	    chart.update();
 	}
 	// MouseOut
 	function resetHighlight(e) {

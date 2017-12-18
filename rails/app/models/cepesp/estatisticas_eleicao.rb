@@ -22,6 +22,7 @@ estatisticas temporais
 
 require 'places/location_model'
 require 'cepesp/eleicao'
+require 'descriptive_statistics/safe'
 
 PRECISAO_PERCENTUAL=3
 
@@ -268,8 +269,122 @@ total_local_individual: votação total para a localização específica
 =end
   end
 
+# Params:
+# - escopo_localizacao: um escopo de localizacao
+# - local: o identificador do local atual (de acordo com o escopo), mas pesquisa
+#          deve ser feita pelo identificador um nivel acima hierarquicamente
+  def self.distribuicao_votacao_candidato(ano, cargo, candidato, local, escopo_localizacao)
+    Rails.logger.debug("[distribuicao_votacao_candidato]: " + local.to_s + ", " + escopo_localizacao.to_s)
+
+    local_superior = nil
+    locais_mesmo_nivel = nil
+
+    ## correcao de issue 36: modificar o codigo abaixo que esta recuperando apenas
+    ## os objetos dentro da mesma microrregiao. deve subir mais um nivel e depois
+    ## pegar tudo nos niveis abaixo
+
+    case escopo_localizacao.to_sym
+    when :municipio
+      local_superior = Municipio.municipios[local].estado
+      locais_mesmo_nivel = []
+      local_superior.mesorregioes.each do | meso_local_superior |
+         meso_local_superior.microrregioes.each do | micro_local_superior |
+            locais_mesmo_nivel.concat(micro_local_superior.municipios)
+         end
+      end
+
+      local_superior.municipios
+    when :micro
+      local_superior = Microrregiao.microrregioes[local].estado
+      locais_mesmo_nivel = []
+      local_superior.mesorregioes.each do | meso_local_superior |
+         locais_mesmo_nivel.concat(meso_local_superior.microrregioes)
+      end
+    when :meso
+      local_superior = Mesorregiao.mesorregioes[local].estado
+      locais_mesmo_nivel = local_superior.mesorregioes
+    when :estado
+      local_superior = Estado.estados[local].macroregiao
+      locais_mesmo_nivel = local_superior.estados
+    end
+
+    distribuicao_votacao = DistribuicaoEspacialVotacao.new(ano, cargo, escopo_localizacao, local)
+
+    votacoes_locais = []
+    locais_mesmo_nivel.each do |local_vizinho|
+      # pesquisa retorna uma hash indexada por numero_candidato com a votacao naquele local
+      begin
+         votacao = DadosCepesp.pesquisa_eleicao_votos_regiao(ano, cargo, escopo_localizacao, local_vizinho.id)[candidato]
+         # so ha um local que atende a restricao pois escopo_localizacao, local_vizinho.id sao do mesmo nivel
+         if votacao then
+            votacoes_locais << votacao[0]
+            distribuicao_votacao.add_local(local_vizinho.id, votacao[0])
+            Rails.logger.debug("[votacoes_locais] = [" + local_vizinho.id + "] = " + votacao[0].qtde_votos + " votos de " + votacao.size.to_s)
+         end
+      rescue => e
+         Rails.logger.error("Erro na pesquisa [pesquisa_eleicao_votos_regiao]" + e.to_s)
+      end
+    end
+
+   return distribuicao_votacao
+
+  end
+
   def resultado(ano)
     return @resultado_anos[ano]
   end
+
+end
+
+class DistribuicaoEspacialVotacao
+  def initialize(ano, cargo, escopo, local_base)
+     @locais = {}
+     @ano = ano
+     @cargo = cargo
+     @escopo = escopo
+     @local_base = local_base
+     @total_votacao = 0
+  end
+
+  attr_reader :ano, :cargo, :escopo, :local_base, :locais
+
+  def total_votacao
+     @total_votacao
+  end
+
+  def add_local(id_local, votacao)
+     @locais[id_local] = votacao.qtde_votos.to_i
+     @total_votacao += @locais[id_local]
+  end
+
+  # Retorna dados das votacoes com acesso aos metodos de descriptive_statistics:
+  # data:
+  # data.sum, data.mean, data.median, data.variance, data.standard_deviation,
+  # data.percentile(30), data.percentile(70), data.percentile_rank(8),
+  # data.mode, data.range
+  def data
+     @locais.values
+  end
+
+  def data_percentile
+     if (@locais.values.size > 0) then
+     percentis = [
+           @locais.values.percentile(20).round(0),
+           @locais.values.percentile(40).round(0),
+           @locais.values.percentile(80).round(0),
+           @locais.values.percentile(60).round(0),
+           @locais.values.percentile(100).round(0)
+        ]
+     else
+        percentis = []
+     end
+  end
+
+  def to_s
+     @locais.to_s
+  end
+
+
+
 
 end

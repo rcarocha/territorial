@@ -4,6 +4,12 @@ require 'open-uri'
 require 'logger'
 
 
+LOGGER_OFFLINE_REQUESTS=Logger.new("#{Rails.root}/log/postponed_requests.log")
+
+def gen_postponed_request(request, file)
+   return "curl -g \"#{request}\" -o #{file}"
+end
+
 def gen_keyhash(key)
    md5 = Digest::MD5.new
    md5 << key.to_s
@@ -24,7 +30,7 @@ end
 # - timeout: timeout de leitura em segundos (default 5s)
 # - logger: logger a ser utilizado
 # - root_dir_cache: diretorio raiz de cache de respostas
-def get_remote_resource(resource_http, request_parameters={}, timeout=5, logger=nil)
+def get_remote_resource(resource_http, request_parameters=nil, timeout=5, logger=nil)
 
   root_dir_cache="#{Rails.root}/tmp"
 
@@ -38,17 +44,21 @@ def get_remote_resource(resource_http, request_parameters={}, timeout=5, logger=
   Rails.logger.debug("[get_remote_resource] Recuperando " + resource_http.to_s)
 
   cache = root_dir_cache + "/" + get_cached_file(resource_http)
-
   if File.exist?(cache) then
-    logger.debug("Recurso " + resource_http.to_s + " em cache de DISCO: [" + cache.to_s + "]") 
+    logger.debug("Recurso " + resource_http.to_s + " em cache de DISCO: [" + cache.to_s + "]")
     response[:body] = File.read(cache)
   else
-    if resource_http.start_with?("https://") then
-       remote_response = open(resource_http, 'r')
-    else
-       remote_response = open(resource_http)
-       #, request_parameters) ERRO DEVE RETORNAR PARA REQ JSON
-    end
+     begin
+       if resource_http.start_with?("https://") then
+          remote_response = open(resource_http, 'r')
+       else
+          remote_response = open(resource_http, request_parameters.merge({:read_timeout => 30}))
+       end
+    rescue => e
+         # armazena em arquivo de log comando curl para recuperar offline a requisicao com problema
+         LOGGER_OFFLINE_REQUESTS.error(gen_postponed_request(resource_http, get_cached_file(resource_http)))
+         raise ErroComunicacao.new(URI.parse(resource_http).host.to_s, e.message)
+      end
     response[:meta_response] = remote_response.meta
     response[:body] = remote_response.read()
 
@@ -97,4 +107,19 @@ class CacheObjetosRequisicao
          @memcache.delete[key]
       end
    end
+end
+
+class ErroComunicacao < StandardError
+
+   def initialize(servidor, erro_interno)
+      @servidor = servidor
+      @erro_interno = erro_interno
+   end
+
+   attr_reader :servidor, :erro_interno
+
+   def to_s
+      return "Ocorreu um erro no acesso ao servidor " + servidor.to_s + "."
+   end
+
 end

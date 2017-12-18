@@ -2,7 +2,12 @@ require 'places/brasil_symb_location'
 require 'ibge/indicador'
 require 'ibge/busca_indicadores_local'
 
+EXTERIOR="99"
+
 class AnalistasController < ApplicationController
+
+   helper AnalistasHelper
+
     def index
 
       @indicadores = Indicador.Indicadores_disponiveis
@@ -22,13 +27,13 @@ class AnalistasController < ApplicationController
       logger.info(Time.now.to_s + " - " + self.class.to_s + ": Regioes e geojson pronto em " + ("%.4f" % (Time.now - inicio)) + " s")
 
       @territorios = {}
-      Macroregiao.macroregioes.except("99").each do |id, macro|
+      Macroregiao.macroregioes.except(EXTERIOR).each do |id, macro|
          @territorios[id] = macro
       end
 
 
       @macros_geojson = {}
-      Macroregiao.macroregioes.except("99").each do |id, macro|
+      Macroregiao.macroregioes.except(EXTERIOR).each do |id, macro|
          antes = Time.now
          @macros_geojson[id] = JSON.parse(get_geojson(macro, tipo_res=:absoluta, resolucao=:macroregiao))
          logger.debug("get_geojson(" + id.to_s + ", tipo_res=:absoluta, resolucao=:macroregiao)) em " + ("%.4f" % (Time.now - antes))+ " s")

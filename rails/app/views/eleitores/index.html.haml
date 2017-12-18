@@ -1,9 +1,17 @@
-%script{:src  => "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js",
+%script{:src  => "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js",
            :type => "text/javascript"}
 %script{:src  => "http://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js",
            :type => "text/javascript"}
 %script{:src  => "https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js",
            :type => "text/javascript"}
+
+%ol.breadcrumb
+   %li.breadcrumb-item
+      %a{:href => "/"} Home
+   %li.breadcrumb-item.active
+      %a{:href => "/eleitor"} Eleitor
+   %li.breadcrumb-item.active=@subnivel_titulo
+
 
 %h1 Eleitor
 
@@ -22,11 +30,14 @@
 
 %h3=@subnivel_titulo
 
+%p Selecione uma região abaixo para limitar o escopo de localização dos dados de votação.
+
 - if @subnivel_loc != nil then
    - @subnivel_loc.each do |subloc|
 
       %a{:href => "?#{subloc.to_sym}=#{subloc.id}"}
          %button.btn.btn-outline-primary{:type => "button"}="#{subloc.nome}"
+%p
 
 - if @eleicao then
 
@@ -37,13 +48,12 @@
             %button.close{ :type => "button",  :data-dismiss => "alert"}
             %strong Não há votos de legenda computados no CEPESP.io!
 
-
       - else
-         - @eleicao.votos_legenda(@ano).each do |legenda |
-            %li="#{legenda.sigla_partido}: #{legenda.qtde_votos} votos"
+         %canvas{:id => "myChartPartidos", :width => "600", :height => "400"}
 
-   %h5 Comparecimento da eleição: #{@eleicao.resultado(@ano).qtd_comparecimento}
+   %h2 Comparecimento na Eleição
    %canvas{:id => "myChart", :width => "600", :height => "400"}
+   %h5 Total: #{number_with_delimiter(@eleicao.resultado(@ano).qtd_comparecimento)}
    /%h5 Abstenções: #{@eleicao.resultado(@ano).qtd_abstencoes}
    /.progress
    /   .progress-bar.progress-bar-striped.bg-success{:role => "progressbar", :style => "width: " + (100*(@eleicao.resultado(@ano).qtd_abstencoes).to_i.to_f/(@eleicao.resultado(@ano).qtd_comparecimento).to_i).round(1).to_s + "%", "aria-valuenow".to_sym => "30", "aria-valuemin".to_sym =>"0", "aria-valuemax".to_sym => "100"}
@@ -76,41 +86,133 @@
             %tr
                %td=chave
                %td
-                  %a{:href => "/charts/#{dados[0].numero_candidato}?data=#{dados[0].to_json}", :target => "_blank"}
-                     #{dados[0].nome_urna_candidato.titleize}
+                  %a{:href => "/charts/#{dados[0].numero_candidato}?data=#{dados[0].to_json}&local=#{@local}&escopo=#{@escopo}", :target => "_blank"}
+                     #{maiusculas_iniciais(dados[0].nome_urna_candidato)}
                %td=dados[0].sigla_partido
                %td
                   %a{:href => "/charts/#{dados[0].numero_candidato}", :target => "_blank"}
                      #{dados[0].numero_candidato}
                %td="#{@eleicao.legendas(@ano)[dados[0].numero_partido].numero_partidos} partidos"
                %td=dados[0].uf
-               %td="#{dados[0].qtde_votos} votos (#{dados[0].percentual_votos_validos}/#{dados[0].percentual_votos_localizacao}/#{dados[0].percentual_votos_gerais})"
-               %td=dados[0].des_situacao_candidatura.titleize
-               %td=dados[0].resultado_eleicao.to_s.gsub("_"," ").titleize
+               %td="#{number_with_delimiter(dados[0].qtde_votos)} votos (#{dados[0].percentual_votos_validos}/#{dados[0].percentual_votos_localizacao}/#{dados[0].percentual_votos_gerais})"
+               %td=maiusculas_iniciais(dados[0].des_situacao_candidatura)
+               %td=codigo_bd_para_humanos(dados[0].resultado_eleicao)
+
+   :javascript
+      var map = L.map('map').setView([-15.7253862,-47.9304935], 5);
+      var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+
+
+       L.tileLayer(osmUrl, { maxZoom: 10, attribution: osmAttrib, id: 'mapbox.streets' }).addTo(map);
+       var myStyle = { "color": "#ff7800", "weight": 3, "opacity": 0.85 };
+
+
+       // StatesData esta sendo declardo dentro de app/assets/javascripts/analista/brasil_geo.js
+       L.geoJSON(statesData, {style: myStyle}).addTo(map);
+       // Retorna a cor de acordo com a densidade populacional
+       function getColor(d) {
+          return d > 1000 ? '#800026' :
+                d > 500  ? '#BD0026' :
+                d > 200  ? '#E31A1C' :
+                d > 100  ? '#FC4E2A' :
+                d > 50   ? '#FD8D3C' :
+                d > 20   ? '#FEB24C' :
+                d > 10   ? '#FED976' :
+                         '#FFEDA0';
+       }
+
+       function style(feature) {
+          return {
+             weight: 2,
+             opacity: 1,
+             color: 'white',
+             dashArray: '3',
+             fillOpacity: 0.7,
+             fillColor: getColor(feature.properties.density)
+          };
+       }
+
+       var geojson = L.geoJson(statesData, {
+          style: style,
+       }).addTo(map);
+
+
+       var info = L.control();
+
+       info.onAdd = function (map) {
+           this._div = L.DomUtil.create('div', 'info'); // Cria a div com a classe "info"
+           this.update();
+           return this._div;
+       };
+
+       // method that we will use to update the control based on feature properties passed
+       info.update = function (props) {
+           this._div.innerHTML = '<h4>Brazil Votos/Região</h4>' +  (props ?
+               '<b>' + props.name + '</b><br />' + props.density + ' people / mi<sup>2</sup>'
+               : 'Selecione um estado');
+       };
+
+       info.addTo(map);
+
+       legend.addTo(map);
+
+       geojson = L.geoJson(statesData, {
+          style: style,
+          onEachFeature: onEachFeature
+       }).addTo(map);
+
    :javascript
          var ctx = document.getElementById('myChart').getContext('2d');
-         var data = [
-             {
-                 value: #{@eleicao.resultado(@ano).qtd_abstencoes},
-                 color:"#F7464A",
-                 highlight: "#FF5A5E",
-                 label: "Abstenções"
-             },
-             {
-                 value: #{@eleicao.resultado(@ano).qt_votos_brancos},
-                 color: "#46BFBD",
-                 highlight: "#5AD3D1",
-                 label: "Brancos"
-             },
-             {
-                 value: #{@eleicao.resultado(@ano).qt_votos_nulos},
-                 color: "#FDB45C",
-                 highlight: "#FFC870",
-                 label: "Nulos"
-             }
-         ];
+         var total = "#{number_with_delimiter(@eleicao.resultado(@ano).qtd_comparecimento)}";
+
+         var config =
+         {
+              type: 'doughnut',
+              data: {
+                  datasets: [{
+                      data: [
+                          #{@eleicao.resultado(@ano).qt_votos_nominais.to_i + @eleicao.resultado(@ano).qt_votos_legenda.to_i},
+                          #{@eleicao.resultado(@ano).qt_votos_brancos},
+                          #{@eleicao.resultado(@ano).qt_votos_nulos},
+                      ],
+                      backgroundColor: [
+                          "#F7464A",
+                          "#46BFBD",
+                          "#FDB45C"
+                      ],
+                      label: 'Dataset 1'
+                  }],
+                  labels: [
+                      "Votos Válidos",
+                      "Brancos",
+                      "Nulos"
+                  ]
+              },
+              options: {
+                  responsive: false,
+                  legend: {
+                      position: 'top',
+                  },
+                  title: {
+                      display: true,
+                      text: 'Comparecimento da eleição: '
+                  },
+                  animation: {
+                      animateScale: true,
+                      animateRotate: true
+                  }
+              }
+          }
+
          var ctx = document.getElementById("myChart").getContext("2d");
-         new Chart(ctx).Pie(data);
+          var chart = new Chart(ctx, config);
+          chart.render({
+              duration: 800,
+              lazy: false,
+              easing: 'easeOutBounce'
+          });
+
          var tabela = $('#table_id').DataTable({
                "language": {
                   "lengthMenu": "Mostrando _MENU_ registros por pagina",
@@ -120,6 +222,51 @@
                   "infoFiltered": "(Filtrado de _MAX_ total registros)"
               }
           } );
+          var ctx = document.getElementById('myChartPartidos').getContext('2d');
+          var eleicao = #{@eleicao.votos_legenda(@ano).to_json.to_s.html_safe}  ;
+
+          votos = new Array;
+          partidos = new Array;
+          cores = new Array;
+          eleicao.forEach(function( index )
+          {
+              votos.push(index.table.qtde_votos);
+              partidos.push(index.table.sigla_partido);
+          });
+
+          var data = {
+            datasets:[{
+                  data: votos,
+                  backgroundColor: ["red", "orange", "yellow", "green", "blue", "purple", "grey",
+                  "red", "orange", "yellow", "green", "blue", "purple", "grey",
+                  "red", "orange", "yellow", "green", "blue",],
+                  label: 'Dataset 1',
+            },],
+            labels: partidos
+          };
+          var options =
+          {
+                  responsive: false,
+                  legend: {
+                      position: 'top',
+                  },
+                  title: {
+                      display: true,
+                      text: 'Votos em Partido'
+                  },
+                  animation: {
+                      animateScale: true,
+                      animateRotate: true
+                  },
+                  colorPool: ['red', 'green', 'orange'],
+                  useRandomColors: true
+          }
+          var myPie =  new Chart(ctx,{
+            type: 'pie',
+            'data': data,
+            'options': options
+          })
+
 /   %h2 detalhamento
 /
 /   .btn-group{:data-toggle => "buttons"}
@@ -143,7 +290,3 @@
 /%div{:id =>"piechart_3d", :style =>"width: 900px; height: 500px;"}
 
 %link{:rel => "stylesheet" , :href => "https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css"}
-
-
-
-   

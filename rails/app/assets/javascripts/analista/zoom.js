@@ -12,8 +12,5 @@
 	    });
 	}
 
-	geojson = L.geoJson(statesData, {
-    	style: style,
-    	onEachFeature: onEachFeature
-	}).addTo(map);
+
 

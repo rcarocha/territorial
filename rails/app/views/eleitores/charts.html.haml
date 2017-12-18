@@ -1,0 +1,171 @@
+%script{:src  => "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js",
+           :type => "text/javascript"}
+
+%script{:src  => "http://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js",
+           :type => "text/javascript"}
+
+%script{:src  => "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js",
+           :type => "text/javascript"}
+
+%ol.breadcrumb
+	%li.breadcrumb-item
+		%a{:href => "/"} Home
+	%li.breadcrumb-item.active
+		%a{:href => "/eleitor"} Eleitor
+	%li.breadcrumb-item.active=@subnivel_detalhamento_titulo
+
+%h2 Votações Espacialmente Distribuídas
+
+
+.card.mb-3
+	%h3.card-header Dados do Candidato
+	.card-body
+		%h5.card-title{:id => "nome"}
+	.card-body
+		%h5.card-title{:id => "estado"}
+	.card-body
+		%h5.card-title{:id => "partido"}
+	.card-body
+		%h5.card-title{:id => "titulo"}
+	.card-body
+		%h5.card-title{:id => "cargo"}
+
+ 
+
+%h1{:id => "nome"}
+%h2{:id => "estado"}
+%h2{:id => "partido"}
+%h2{:id => "titulo"}
+%h2{:id => "cargo"}
+%h2{:id => "regiao"}
+%div{:id => "votos", :style => "float: right;"}
+	%h3{:id => "votosLocate"}Votos Locais: , Votos Validos: , Votos Geral:
+%div{:id => "map", :style => "width: 600px; height: 400px; float: left;"}
+%canvas{:id => "myChart", :width => "600", :height => "400"}
+
+:javascript
+
+	var url = '/stat/<%= @id_stat %>';
+	var label = "";
+	var dados  = #{@dados};
+
+	var percentual_locate = dados['table']['percentual_votos_localizacao'];
+	var percentaual_votesValidate = dados['table']['percentual_votos_validos'];
+	var percentaual_votesGeneral = dados['table']['percentual_votos_gerais'];
+	var total_de_votos = dados['table']['qtde_votos'];
+
+	var estado = dados['table']['nome_uf'];
+	var partido = dados['table']['sigla_partido'];
+	var titulo = dados['table']['num_titulo_eleitoral_candidato'];
+	var cargo = dados['table']['descricao_cargo'];
+
+	var mesoRegiao =  dados['table']['nome_meso'];
+	var microRegiao =  dados['table']['nome_micro'];
+	var nameCandidate =  dados['table']['nome_urna_candidato'];
+	var messo =  #{@messoregioes.to_s.html_safe};
+
+
+	if(mesoRegiao){
+	$("#regiao").html("Mesoregião: "+mesoRegiao);
+	}
+
+	if (microRegiao){
+		$("#regiao").html("Microregião: "+microRegiao);
+	}
+
+	$("#nome").html("Nome: " + nameCandidate);
+	$("#estado").html("Estado: "+estado);
+	$("#partido").html("Partido: "+partido);
+	$("#titulo").html("Titulo: "+titulo);
+	$("#cargo").html("Cargo: "+cargo);
+
+	var config ={
+		type: 'pie',
+			data: {
+			  datasets: [{
+			      data: [
+			          percentaual_votesValidate,
+			          percentaual_votesGeneral,
+			      ],
+			      backgroundColor: [
+			          "#F7464A",
+			          "#46BFBD",
+			          "#FDB45C",
+			          "green"
+			      ],
+			      label: 'Total de Votos'
+			  }],
+			  labels: [
+				"Votos na Região",
+				"Votos Totais"
+			  ]
+			},
+			options: {
+			  responsive: false,
+			  legend: {
+			      position: 'top',
+			  },
+			  title: {
+			      display: true,
+			      text: 'Proporção dos votos '
+			  },
+			  animation: {
+			      animateScale: true,
+			      animateRotate: true
+			  }
+			}}
+
+	var ctx = document.getElementById('myChart').getContext('2d');
+
+	var ctx = document.getElementById("myChart").getContext("2d");
+	
+	
+	var map = L.map('map').setView([-15.7253862,-47.9304935], 5);
+	var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+	var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+
+	if("#{@escopoLocalizacao}" == "estado")
+	{
+		config.type = 'bar';
+		var i = 0;
+		statesData.features.forEach(function( index )
+		{
+		if (index.properties.sigla == dados['table']['uf']){
+			statesData = statesData.features[i];
+			statesData["properties"]["votacao"] = percentual_locate;
+		}
+			i++;
+		});
+		$('#votosLocate').html('Total de Votos:'+total_de_votos+', Votos Válidos: '+percentaual_votesValidate+', Votos Local: '+percentual_locate+', Votos Geral: '+percentaual_votesGeneral);
+		config.data.labels = ["Total de Votos","Votos Válidos","Votos Local", "Votos Geral"];
+		data = [total_de_votos, 
+				percentaual_votesValidate,
+				percentual_locate,
+				percentaual_votesGeneral];
+		config.data.datasets[0].data = data;
+	}else{
+		statesData = #{@dataStates};
+	}
+
+	var chart = new Chart(ctx, config);
+	L.tileLayer(osmUrl, { maxZoom: 10, attribution: osmAttrib, id: 'mapbox.streets' }).addTo(map);
+	var myStyle = { "color": "#ff7800", "weight": 3, "opacity": 0.85 };
+
+
+	// StatesData esta sendo declardo dentro de app/assets/javascripts/analista/brasil_geo.js
+	L.geoJSON(statesData, {style: myStyle}).addTo(map);
+	// Retorna a cor de acordo com a densidade populacional
+
+	#{leaflet_function_getcolor(@distribuicao_votacao.data_percentile)}
+	#{leaflet_function_style("votacao")}
+	#{leaflet_function_legenda("map",@distribuicao_votacao.data_percentile)}
+	#{leaflet_create_info("map", "Votos por "+ @subnivel_detalhamento_titulo, "votacao", "votos", mensagem_adicional="")}
+
+	var geojson = L.geoJson(statesData, {
+	  style: style,
+	}).addTo(map);
+
+	geojson = L.geoJson(statesData, {
+		style: style,
+		onEachFeature: onEachFeature
+	}).addTo(map);
