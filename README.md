@@ -2,7 +2,7 @@
 
 ## Desafio
 
-Detalhes do desafio estão mantidos em: [desafio de implementação](http://www.inf.ufg.br/~ricardo/esaas/desafio/desafio-implementacao.html). 
+ Detalhes do desafio estão mantidos em: [desafio de implementação](http://www.inf.ufg.br/~ricardo/esaas/desafio/desafio-implementacao.html). 
 
 + Nome da Equipe: ufcat
 + Participantes: Ricardo (líder), Gabriel, Luis, Marco Túlio (graduado), Dimas
