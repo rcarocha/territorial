@@ -11,6 +11,10 @@ Detalhes do desafio estão mantidos em: [desafio de implementação](http://www.
 
    * A aplicação proverá pesquisas em resultados eleitorais baseadas em localização semântica estática (divisões administrativas) e dinâmica (territórios baseados em critérios sociais de acordo com o IBGE), e oferecerá um frontend composto de uma aplicação baseada em mapas que permitirá simulações e um backend que oferecerá as pesquisas utilizando uma API RESTful. Aplicação frontend ofererá ainda interface específica para eleitores, ajudando na avaliação do efeito do voto na eleição de fato e promovendo simulaçães. A solução integrará dados do IBGE, TSE (não incluídos no CEPESPData), bases de mapas abertas, além do próprio CEPESPData.
 
+## Importante
+
+O protótipo está limitado às **eleições para deputado federal de 2014**. Todos os dados são referentes a este contexto eleitoral.
+
 ## Execução da Aplicação
 
 ### Requisitos
