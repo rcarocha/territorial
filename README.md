@@ -2,14 +2,14 @@
 
 ## Desafio
 
-Detalhes do desafio est�o mantidos em: [desafio de implementa��o](http://www.inf.ufg.br/~ricardo/esaas/desafio/desafio-implementacao.html).
+Detalhes do desafio estão mantidos em: [desafio de implementação](http://www.inf.ufg.br/~ricardo/esaas/desafio/desafio-implementacao.html).
 
 + Nome da Equipe: ufcat
 + Participantes: Ricardo (líder), Gabriel, Luis, Marco Túlio (graduado), Dimas
-+ Perfil da Equipe: professor e alunos de disciplina de graduação em Ciência da Computa��o, complementado com um graduado.
++ Perfil da Equipe: professor e alunos de disciplina de graduação em Ciência da Computação, complementado com um graduado.
 + Descrição do projeto a desenvolver
 
-   * A aplicação proverá pesquisas em resultados eleitorais baseadas em localização semântica estática (divisões administrativas) e dinâmica (territórios baseados em critérios sociais de acordo com o IBGE), e oferecerá um frontend composto de uma aplicação baseada em mapas que permitirá simulações e um backend que oferecerá as pesquisas utilizando uma API RESTful. Aplicação frontend ofererá ainda interface específica para eleitores, ajudando na avaliação do efeito do voto na eleição de fato e promovendo simulaçães. A solução integrará dados do IBGE, TSE (não incluídos no CEPESPData), bases de mapas abertas, além do pr�prio CEPESPData.
+   * A aplicação proverá pesquisas em resultados eleitorais baseadas em localização semântica estática (divisões administrativas) e dinâmica (territórios baseados em critérios sociais de acordo com o IBGE), e oferecerá um frontend composto de uma aplicação baseada em mapas que permitirá simulações e um backend que oferecerá as pesquisas utilizando uma API RESTful. Aplicação frontend ofererá ainda interface específica para eleitores, ajudando na avaliação do efeito do voto na eleição de fato e promovendo simulaçães. A solução integrará dados do IBGE, TSE (não incluídos no CEPESPData), bases de mapas abertas, além do próprio CEPESPData.
 
 ## Execução da Aplicação
 
@@ -35,9 +35,9 @@ rails server
 
 A aplicação ficará disponível em <http://localhost:3000/>, considerando que o acesso será feito na mesma máquina de execução da aplicação.
 
-## Implementa��o proposta
+## Implementação proposta
 
-* Ver documentação das [interfaces da aplicação](INTERFACES.md), que indica tanto aspectos da interface gr�fica como dos componentes internos.
+* Ver documentação das [interfaces da aplicação](INTERFACES.md), que indica tanto aspectos da interface gráfica como dos componentes internos.
 * ver [documentação projeto implementação](docs/implementacao.md)
 
 ## Tarefas
